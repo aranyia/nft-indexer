@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='results.js') }}"></script>
+    <meta charset="UTF-8">
+    <title>Search NFTs</title>
+</head>
+<body>
+<div class="parent">
+    <label for="query"></label>
+    <input id="query" type="text" size="30" class="query"/>
+    <button id="search">Search</button>
+    <script>
+        const key_enter = 13;
+        let queryInput = document.querySelector("#query");
+        let searchButton = document.querySelector("#search");
+
+        queryInput.addEventListener('keydown', function (event) {
+            if (event.keyCode === key_enter) {
+                event.preventDefault();
+                searchButton.click();
+            }
+        });
+
+        searchButton.addEventListener('click', function () {
+            let results = document.querySelector("#results");
+            results.innerHTML = "Searching...";
+            fetch("/search?q=" + document.querySelector("#query").value)
+                .then(response => response.json())
+                .then(data => {
+                    results.innerHTML = '';
+                    data.forEach(item => {
+                        let wrapper = renderResult(item);
+                        results.appendChild(wrapper);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+    <div id="results">
+    </div>
+</div>
+</body>
+</html>

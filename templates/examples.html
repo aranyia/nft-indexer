@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='results.js') }}"></script>
+    <meta charset="UTF-8">
+    <title>Search NFTs | Examples</title>
+    <script>
+        window.onload = function () {
+            let aTags = document.querySelectorAll('a');
+
+            aTags.forEach(aTag => {
+                aTag.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    window.location.href = aTag.href;
+
+                    let anchor = window.location.hash.substring(1);
+
+                    if (anchor) {
+                        let results = document.querySelector("#results");
+                        results.innerHTML = "Searching...";
+                        fetch("/search?q=" + anchor)
+                            .then(response => response.json())
+                            .then(data => {
+                                results.innerHTML = '';
+                                data.forEach(item => {
+                                    let wrapper = renderResult(item);
+                                    results.appendChild(wrapper);
+                                });
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+                    }
+                });
+            });
+        };
+    </script>
+</head>
+<body>
+<div class="parent">
+    <div class="child">
+        <h3>Weapons</h3>
+        <ul>
+            <li><a href="#katana">katana</a></li>
+            <li><a href="#sword">sword</a></li>
+            <li><a href="#saw">saw</a></li>
+            <li><a href="#bamboo">bamboo</a></li>
+            <li><a href="#nunchucks">nunchucks</a></li>
+        </ul>
+    </div>
+    <div class="child">
+        <h3>Clothes</h3>
+        <ul>
+            <li><a href="#hood">hood</a></li>
+            <li><a href="#kimono">kimono</a></li>
+            <li><a href="#jacket">jacket</a></li>
+            <li><a href="#bomber jacket">bomber jacket</a></li>
+            <li><a href="#parka">parka</a></li>
+            <li><a href="#vest">vest</a></li>
+            <li><a href="#hat">hat</a></li>
+            <li><a href="#gloves">gloves</a></li>
+        </ul>
+    </div>
+    <div class="child">
+        <h3>Accessories</h3>
+        <ul>
+            <li><a href="#headphones">headphones</a></li>
+            <li><a href="#sunglasses">sunglasses</a></li>
+            <li><a href="#glasses">glasses</a></li>
+            <li><a href="#guitar">guitar</a></li>
+            <li><a href="#skateboard">skateboard</a></li>
+            <li><a href="#backpack">backpack</a></li>
+            <li><a href="#gold">gold</a></li>
+            <li><a href="#golf">golf</a></li>
+        </ul>
+    </div>
+    <div class="child">
+        <h3>Appearance</h3>
+        <ul>
+            <li><a href="#tattoo">tattoo</a></li>
+            <li><a href="#dragon tattoo">dragon tattoo</a></li>
+            <li><a href="#dread">dread</a></li>
+            <li><a href="#blonde">blonde</a></li>
+            <li><a href="#blonde dread">blonde dread</a></li>
+            <li><a href="#flower">flower</a></li>
+        </ul>
+    </div>
+    <div class="child">
+        <h3>Emotion</h3>
+        <ul>
+            <li><a href="#joy">joy</a></li>
+            <li><a href="#smile">smile</a></li>
+            <li><a href="#sad">sad</a></li>
+            <li><a href="#neutral">neutral</a></li>
+        </ul>
+    </div>
+    <div class="child">
+        <h3>Weather</h3>
+        <ul>
+            <li><a href="#rain">rain</a></li>
+            <li><a href="#umbrella">umbrella</a></li>
+            <li><a href="#lightning">lightning</a></li>
+        </ul>
+    </div>
+</div>
+<div class="parent">
+    <div id="results">
+    </div>
+</div>
+</body>
+</html>

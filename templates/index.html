@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NFTs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://unpkg.com/@ethersphere/bee-js/dist/index.browser.min.js"></script>
+    <script src="{{ url_for('static', filename='swarm.js') }}"></script>
+</head>
+<body>
+{% for nft in nfts %}
+<div class="parent">
+    <div class="child">
+        <img src="{{ nft['image_url'] }}" width=420>
+    </div>
+    <div class="child">
+        <div>
+            <h3>{{ nft['name'] }}</h3>
+            <p>
+                <a href="{{ nft['opensea_url'] }}" target="_blank">OpenSea</a> | <a href="{{ nft['metadata_url'] }}" target="_blank">Metadata</a>
+            </p>
+        </div>
+        <div>
+            <h4>Traits</h4>
+            <table>
+            {% for trait in nft['traits'] %}
+                <tr>
+                    <td>{{ trait['trait_type'] }}</td>
+                    <td>{{ trait['value'] }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+        </div>
+    </div>
+
+    <div class="child">
+    <div class="child-ai">
+        <p id="ai-{{ nft['identifier'] }}-desc" class="ai">Generating description...</p>
+        <script>
+            fetch("/ai/describe/{{ nft['identifier'] }}")
+                .then(response => response.text())
+                .then(data => {
+                    document.querySelector("#ai-{{ nft['identifier'] }}-desc").innerHTML = data;
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        </script>
+    </div>
+    <div class="child-ai">
+        <button id="generate-{{ nft['identifier'] }}-poem">Generate Poem</button>
+        <p id="ai-{{ nft['identifier'] }}-poem" class="ai"></p>
+        <script>
+            document.querySelector("#generate-{{ nft['identifier'] }}-poem").addEventListener('click', function() {
+                document.querySelector("#ai-{{ nft['identifier'] }}-poem").innerHTML = "Generating...";
+                fetch("/ai/poem/short/{{ nft['identifier'] }}")
+                    .then(response => response.text())
+                    .then(data => {
+                        document.querySelector("#ai-{{ nft['identifier'] }}-poem").innerHTML = data;
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            });
+        </script>
+    </div>
+    <div class="child-ai">
+        <button id="generate-{{ nft['identifier'] }}-colors">Get Color Palette</button>
+        <p id="ai-{{ nft['identifier'] }}-colors" class="ai"></p>
+        <script>
+            document.querySelector("#generate-{{ nft['identifier'] }}-colors").addEventListener('click', function() {
+                document.querySelector("#ai-{{ nft['identifier'] }}-colors").innerHTML = "Generating...";
+                fetch("/ai/colors/{{ nft['identifier'] }}")
+                    .then(response => response.text())
+                    .then(data => {
+                        document.querySelector("#ai-{{ nft['identifier'] }}-colors").innerHTML = data;
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            });
+        </script>
+    </div>
+    <div class="child-ai">
+        <input type="text" id="input-{{ nft['identifier'] }}-freetext" placeholder="" size="35">
+        <button id="generate-{{ nft['identifier'] }}-freetext">Generate</button>
+        <p id="ai-{{ nft['identifier'] }}-freetext" class="ai"></p>
+        <script>
+            document.querySelector("#generate-{{ nft['identifier'] }}-freetext").addEventListener('click', function() {
+                document.querySelector("#ai-{{ nft['identifier'] }}-freetext").innerHTML = "Generating...";
+                fetch("/ai/freetext/{{ nft['identifier'] }}/" + document.querySelector("#input-{{ nft['identifier'] }}-freetext").value)
+                    .then(response => response.text())
+                    .then(data => {
+                        document.querySelector("#ai-{{ nft['identifier'] }}-freetext").innerHTML = data;
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            });
+        </script>
+    </div>
+    <div class="child-ai">
+        <button id="generate-{{ nft['identifier'] }}-swarm">Upload to SWARM</button>
+        <p id="ai-{{ nft['identifier'] }}-swarm-links" class="ai hidden">
+            <a id="ai-{{ nft['identifier'] }}-swarm" target="_blank"></a> |
+            <a id="ai-{{ nft['identifier'] }}-swarm-desc" target="_blank"></a> |
+            <a id="ai-{{ nft['identifier'] }}-swarm-meta" target="_blank"></a> |
+            <a id="ai-{{ nft['identifier'] }}-swarm-poem" class="ai" target="_blank"></a> |
+            <a id="ai-{{ nft['identifier'] }}-swarm-colors" class="ai" target="_blank"></a> |
+            <a id="ai-{{ nft['identifier'] }}-swarm-gen" class="ai" target="_blank"></a>
+        </p>
+        <script>
+            document.querySelector("#generate-{{ nft['identifier'] }}-swarm").addEventListener('click', function() {
+                document.querySelector("#ai-{{ nft['identifier'] }}-swarm").innerHTML = "Uploading...";
+                document.querySelector("#ai-{{ nft['identifier'] }}-swarm-links").classList.remove('hidden');
+                let base64 = "{{ nft['image_base64'] }}";
+                let metadata_opensea = "{{ nft['metadata'] }}".replace(/&#39;/g, '"');
+                let description = document.querySelector("#ai-{{ nft['identifier'] }}-desc").innerHTML;
+                let poem = document.querySelector("#ai-{{ nft['identifier'] }}-poem").innerHTML;
+                let colors = document.querySelector("#ai-{{ nft['identifier'] }}-colors").innerHTML;
+                let generated = document.querySelector("#ai-{{ nft['identifier'] }}-freetext").innerHTML;
+                upload(base64, description, poem, colors, metadata_opensea, generated).then(url => {
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm").innerHTML = "Image on SWARM";
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm").href = url;
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-desc").innerHTML = "Description";
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-desc").href = url + 'desc';
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-colors").innerHTML = "Color Palette";
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-colors").href = url + 'colors';
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-poem").innerHTML = "Poem";
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-poem").href = url + 'poem';
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-meta").innerHTML = "Metadata";
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-meta").href = url + 'metadata';
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-gen").innerHTML = "Generated Misc.";
+                        document.querySelector("#ai-{{ nft['identifier'] }}-swarm-gen").href = url + 'gen';
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            });
+        </script>
+    </div>
+    </div>
+</div>
+{% endfor %}
+</body>
+</html>
