@@ -9,8 +9,9 @@ from langchain_community.chat_models import ChatOllama
 from langchain_community.llms import Ollama
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser, BaseTransformOutputParser
+
+from index import Index
 from opensea import OpenSeaAPI
-from trie import Trie
 
 start_time = time.time()
 
@@ -130,19 +131,6 @@ for nft in nfts:
         print(f"Description: {nft['ai_description']}\nKeywords: {nft['ai_keywords']}\n\n")
     except Exception as e:
         logging.error(f"Error generating keywords for NFT {nft['image_url']}: {e}")
-
-
-class Index(Trie):
-
-    def add(self, metadata: [], nft):
-        nft_index = {
-            "description": nft['ai_description'],
-            "keywords": nft['ai_keywords'],
-            "image_url": nft['image_url'],
-        }
-        for word in metadata:
-            self.insert(word, nft_index)
-
 
 index = Index()
 for nft in nfts:

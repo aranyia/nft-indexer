@@ -9,7 +9,8 @@ class Trie:
 
     def __init__(self, children=None):
         self.root = TrieNode()
-        self.root.children = children
+        if children is not None:
+            self.root.children = children
 
     def insert(self, word, image):
         node = self.root

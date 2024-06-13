@@ -1,6 +1,6 @@
 import pickle
 
-from nft_search_web_swarm import Index, shard_hash_func
+from index import Index, shard_hash_func
 from trie import Trie
 
 
