@@ -1,30 +1,18 @@
-import base64
 import logging
 import os
 import pickle
 import re
-import requests
+import sys
 import time
 
-from dataclasses import dataclass
 from langchain_community.chat_models import ChatOllama
 from langchain_community.llms import Ollama
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser, BaseTransformOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-
+from opensea import OpenSeaAPI
 from trie import Trie
 
 start_time = time.time()
-
-
-@dataclass
-class Trait:
-    trait_type: str
-    value: str
-
-    def __str__(self):
-        return f'{self.trait_type} is {self.value}.'
 
 
 class KeywordParser(BaseTransformOutputParser[set[str]]):
@@ -73,52 +61,6 @@ class AiModelText:
         return chain_keywords.invoke({"text": text})
 
 
-class OpenSeaAPI:
-    url = "https://api.opensea.io/api/v2"
-    limit_default = 5
-
-    def __init__(self, api_key):
-        self.headers = {
-            "accept": "application/json",
-            "x-api-key": api_key
-        }
-
-    def get_collection(self, name):
-        response = requests.get(self.url + "/collections/" + name, headers=self.headers)
-        return response.json()
-
-    def get_collection_nfts(self, chain, contract, limit=limit_default) -> list[dict]:
-        response = requests.get(self.url + f"/chain/{chain}/contract/{contract}/nfts?limit={limit}",
-                                headers=self.headers)
-        return response.json()['nfts']
-
-    def get_collection_nfts_by_name(self, name, limit=limit_default) -> list[dict]:
-        response = requests.get(self.url + f"//collection/{name}/nfts?limit={limit}",
-                                headers=self.headers)
-        return response.json()['nfts']
-
-    @staticmethod
-    def get_traits(metadata: dict) -> list[Trait]:
-        traits = []
-        for trait in metadata.get('attributes', []):
-            traits.append(Trait(trait['trait_type'], trait['value']))
-        return traits
-
-    @staticmethod
-    def get_metadata(metadata_url) -> dict:
-        if metadata_url is None:
-            return {}
-        response = requests.get(metadata_url)
-        metadata = response.json()
-        return metadata
-
-    @staticmethod
-    def get_image_as_base64(image_url):
-        response = requests.get(image_url)
-        base64_image = base64.b64encode(response.content)
-        return base64_image.decode('utf-8')
-
-
 def load_nfts(collection_name):
     max_limit = 200
     nfts = opensea.get_collection_nfts_by_name(collection_name, max_limit)
@@ -142,6 +84,9 @@ def load_nfts(collection_name):
 
 ai_model_image = AiModelImage()
 ai_model_text = AiModelText()
+
+if os.getenv("OPENSEA_API_KEY") is None:
+    sys.exit("Please set the environment variable OPENSEA_API_KEY with your OpenSea API key.")
 opensea = OpenSeaAPI(os.getenv("OPENSEA_API_KEY"))
 
 nfts = load_nfts('azukielementals')  # 'azukielementals','the-anata-nft','parallelalpha','pudgypenguins','lasogette'
