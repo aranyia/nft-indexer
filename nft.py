@@ -1,5 +1,7 @@
 import base64
 import os
+import sys
+
 import requests
 
 from dataclasses import dataclass
@@ -129,6 +131,9 @@ def create_app():
 
 ai_model_image = AiModelImage()
 ai_model_text = AiModelText()
+
+if os.getenv("OPENSEA_API_KEY") is None:
+    sys.exit("Please set the environment variable OPENSEA_API_KEY with your OpenSea API key.")
 opensea = OpenSeaAPI(os.getenv("OPENSEA_API_KEY"))
 
 nfts = load_nfts('azukielementals')  # 'azukielementals','the-anata-nft','parallelalpha','pudgypenguins','lasogette'
