@@ -72,17 +72,6 @@ class AiModelText:
                 self.llm | KeywordParser())
         return chain_keywords.invoke({"text": text})
 
-    def short_poem(self, description: str) -> str:
-        chain_poem = (SystemMessage(content="Do not repeat instructions in the response. Do not include a title.") +
-                      HumanMessage(content=f"Write a one-stanza short poem about this character: {description}") |
-                      self.llm | StrOutputParser())
-        return chain_poem.invoke({"description": description})
-
-    def free_text(self, instructions: str, description: str) -> str:
-        prompt = ChatPromptTemplate.from_template("{instructions}\nBased on this: {description}")
-        chain_poem = prompt | self.llm | StrOutputParser()
-        return chain_poem.invoke({"instructions": instructions, "description": description})
-
 
 class OpenSeaAPI:
     url = "https://api.opensea.io/api/v2"
