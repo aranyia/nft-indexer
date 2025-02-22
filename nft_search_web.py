@@ -24,8 +24,8 @@ def examples():
 
 @app.route('/search')
 def search():
-    query = request.args.get('q', '').split(' ')
-    print(query)
+    query = request.args.get('q', '').lower().split(' ')
+
     index = load_index()
     results = index.query(query)
 
